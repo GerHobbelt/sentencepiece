@@ -232,6 +232,9 @@ class SentencePieceProcessor {
   virtual util::Status Encode(util::min_string_view input,
                               std::vector<std::string> *pieces) const;
 
+  virtual util::Status EncodeSurface(util::min_string_view input,
+                              std::vector<std::string> *pieces) const;
+                              
   // Given a UTF8 input, encodes it into a sequence of ids.
   virtual util::Status Encode(util::min_string_view input,
                               std::vector<int> *ids) const;

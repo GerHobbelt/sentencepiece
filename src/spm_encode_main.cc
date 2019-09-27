@@ -24,7 +24,7 @@
 DEFINE_string(model, "", "model file name");
 DEFINE_string(
     output_format, "piece",
-    "choose from piece, id, proto, nbest_piece, nbest_id, or nbest_proto");
+    "choose from piece, cased_piece, id, proto, nbest_piece, nbest_id, or nbest_proto");
 DEFINE_string(output, "", "output filename");
 DEFINE_string(extra_options, "",
               "':' separated encoder extra options, e.g., \"reverse:bos:eos\"");
@@ -84,6 +84,11 @@ int main(int argc, char *argv[]) {
   } else if (FLAGS_output_format == "piece") {
     process = [&](const std::string &line) {
       CHECK_OK(sp.Encode(line, &sps));
+      output->WriteLine(sentencepiece::string_util::Join(sps, " "));
+    };
+  } else if (FLAGS_output_format == "cased_piece") {
+    process = [&](const std::string &line) {
+      CHECK_OK(sp.EncodeSurface(line, &sps));
       output->WriteLine(sentencepiece::string_util::Join(sps, " "));
     };
   } else if (FLAGS_output_format == "id") {
