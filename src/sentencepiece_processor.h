@@ -275,6 +275,10 @@ class SentencePieceProcessor {
                                     float alpha,
                                     std::vector<std::string> *pieces) const;
 
+  virtual util::Status SampleEncodeSurface(util::min_string_view input, int nbest_size,
+                                    float alpha,
+                                    std::vector<std::string> *pieces) const;
+
   // Same as above, but returns a sequence of ids.
   virtual util::Status SampleEncode(util::min_string_view input, int nbest_size,
                                     float alpha, std::vector<int> *ids) const;
