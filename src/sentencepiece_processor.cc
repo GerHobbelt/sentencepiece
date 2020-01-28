@@ -232,7 +232,6 @@ util::Status SentencePieceProcessor::EncodeSurface(
   return util::OkStatus();
 }
 
-
 util::Status SentencePieceProcessor::Encode(util::min_string_view input,
                                             std::vector<int> *ids) const {
   CHECK_OR_RETURN_STATUS_STL(ids);
@@ -315,6 +314,27 @@ util::Status SentencePieceProcessor::SampleEncode(
     pieces->emplace_back(sp.piece());
   }
 
+  return util::OkStatus();
+}
+
+util::Status SentencePieceProcessor::SampleEncodeSurface(
+    util::min_string_view input, int nbest_size, float alpha,
+    std::vector<std::string> *pieces) const {
+  CHECK_OR_RETURN_STATUS_STL(pieces);
+
+  SentencePieceText spt;
+  RETURN_IF_ERROR(SampleEncode(input, nbest_size, alpha, &spt));
+  for (const auto &sp : spt.pieces()) {
+    std::string x = sp.piece();
+    std::string surface = sp.surface();
+    if((surface.size() > 0) && (surface.substr(0, 1) == " "))
+      surface = surface.substr(1);
+    if(x.substr(0,3) == kSpaceSymbol)
+      pieces->emplace_back(kSpaceSymbol + surface);
+    else 
+      pieces->emplace_back(surface);
+  }
+  
   return util::OkStatus();
 }
 
