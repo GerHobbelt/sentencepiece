@@ -17,6 +17,7 @@ if (SPM_USE_BUILTIN_PROTOBUF)
   set(SPM_PROTO_SRCS builtin_pb/sentencepiece.pb.cc)
   set(SPM_MODEL_PROTO_HDRS builtin_pb/sentencepiece_model.pb.h)
   set(SPM_MODEL_PROTO_SRCS builtin_pb/sentencepiece_model.pb.cc)
+  set(ABSL_FLAGS_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/absl/flags/flag.cc)
   set(PROTOBUF_LITE_LIBRARY "")
   set(PROTOBUF_LITE_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/protobuf-lite/arena.cc
@@ -60,6 +61,12 @@ endif()
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
+if (MSVC)
+  add_definitions("/D_USE_INTERNAL_STRING_VIEW")
+else()
+  add_definitions("-D_USE_INTERNAL_STRING_VIEW")
+endif()
+
 set(SPM_SRCS
   ${PROTOBUF_LITE_SRCS}
   ${SPM_PROTO_HDRS}
@@ -72,7 +79,7 @@ set(SPM_SRCS
   util.h
   freelist.h
   filesystem.h
-  flags.h
+  init.h
   sentencepiece_processor.h
   word_model.h
   model_factory.h
@@ -84,7 +91,6 @@ set(SPM_SRCS
   char_model.cc
   error.cc
   filesystem.cc
-  flags.cc
   model_factory.cc
   model_interface.cc
   normalizer.cc
@@ -108,6 +114,7 @@ set(SPM_TRAIN_SRCS
   char_model_trainer.h
   bpe_model_trainer.h
   sentencepiece_trainer.h
+  pretokenizer_for_training.h
   builder.cc
   unicode_script.cc
   trainer_factory.cc
@@ -116,7 +123,8 @@ set(SPM_TRAIN_SRCS
   word_model_trainer.cc
   char_model_trainer.cc
   bpe_model_trainer.cc
-  sentencepiece_trainer.cc)
+  sentencepiece_trainer.cc
+  pretokenizer_for_training.cc)
 
 set(SPM_TEST_SRCS
   ${SPM_PROTO_HDRS}
@@ -128,7 +136,7 @@ set(SPM_TEST_SRCS
   char_model_test.cc
   char_model_trainer_test.cc
   filesystem_test.cc
-  flags_test.cc
+  init_test.cc
   model_factory_test.cc
   model_interface_test.cc
   normalizer_test.cc
@@ -143,7 +151,9 @@ set(SPM_TEST_SRCS
   unigram_model_trainer_test.cc
   util_test.cc
   word_model_test.cc
-  word_model_trainer_test.cc)
+  word_model_trainer_test.cc
+  pretokenizer_for_training_test.cc
+  ${ABSL_FLAGS_SRCS})
 
 find_package(Threads REQUIRED)
 
@@ -185,6 +195,13 @@ target_link_libraries(sentencepiece_train-static INTERFACE sentencepiece-static 
 if (SPM_ENABLE_SHARED)
   target_link_libraries(sentencepiece ${SPM_LIBS})
   target_link_libraries(sentencepiece_train ${SPM_LIBS} sentencepiece)
+  if ((${CMAKE_SYSTEM_PROCESSOR} STREQUAL "armv7l") OR
+      (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "mips") OR
+      (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "m68k") OR
+      (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "ppc") OR
+      (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "sh4"))
+    list(APPEND SPM_LIBS "atomic")
+  endif()
   set(SPM_INSTALLTARGETS sentencepiece sentencepiece_train sentencepiece-static sentencepiece_train-static)
   set_target_properties(sentencepiece sentencepiece_train PROPERTIES SOVERSION 0 VERSION 0.0.0)
   set_target_properties(sentencepiece PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS YES)
@@ -229,11 +246,11 @@ if (NOT MSVC)
   endif()
 endif()
 
-add_executable(spm_encode spm_encode_main.cc)
-add_executable(spm_decode spm_decode_main.cc)
-add_executable(spm_normalize spm_normalize_main.cc)
-add_executable(spm_train spm_train_main.cc)
-add_executable(spm_export_vocab spm_export_vocab_main.cc)
+add_executable(spm_encode spm_encode_main.cc ${ABSL_FLAGS_SRCS})
+add_executable(spm_decode spm_decode_main.cc ${ABSL_FLAGS_SRCS})
+add_executable(spm_normalize spm_normalize_main.cc ${ABSL_FLAGS_SRCS})
+add_executable(spm_train spm_train_main.cc ${ABSL_FLAGS_SRCS})
+add_executable(spm_export_vocab spm_export_vocab_main.cc ${ABSL_FLAGS_SRCS})
 
 target_link_libraries(spm_encode sentencepiece)
 target_link_libraries(spm_decode sentencepiece)
@@ -273,13 +290,13 @@ if (SPM_BUILD_TEST OR SPM_COVERAGE)
   include(Dart)
 
   add_test(NAME sentencepiece_test
-    COMMAND $<TARGET_FILE:spm_test> --data_dir=${data_dir})
+    COMMAND $<TARGET_FILE:spm_test> --test_srcdir=${data_dir})
 endif()
 
 if (SPM_COVERAGE)
   add_custom_target(coverage
     COMMAND mkdir -p coverage
-    COMMAND $<TARGET_FILE:spm_test> --data_dir=${data_dir}
+    COMMAND $<TARGET_FILE:spm_test> --test_srcdir=${data_dir}
     COMMAND lcov -c -d . -o coverage.info
     COMMAND lcov --remove coverage.info "include*" "/c++" "_test*" "testharness*" "third_party*" ".pb.*" -o coverage.info
     COMMAND mkdir -p lcov_html
