@@ -225,6 +225,9 @@ class SentencePieceProcessor {
   virtual util::Status LoadVocabulary(util::min_string_view filename,
                                       int threshold);
 
+  virtual util::Status LoadVocabulary(std::stringstream& file_stream, int threshold);
+
+
   //////////////////////////////////////////////////////////////
   // Simple API.
   //
