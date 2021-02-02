@@ -60,6 +60,14 @@ void SentencePieceProcessor::LoadOrDie(absl::string_view filename) {
   CHECK_OK(Load(filename));
 }
 
+util::Status SentencePieceProcessor::Load(std::stringstream& file_stream) {
+  std::string file_content = file_stream.str();
+  if (file_content[file_content.size() - 1] == '\n') {
+    file_content.pop_back();
+  }
+  return LoadFromSerializedProto(file_content);
+}
+
 util::Status SentencePieceProcessor::Load(const ModelProto &model_proto) {
   auto model_proto_copy = absl::make_unique<ModelProto>();
   *model_proto_copy = model_proto;
