@@ -223,12 +223,17 @@ util::Status SentencePieceProcessor::LoadVocabulary(
   std::vector<std::string> vocab;
 
   while (std::getline(file_stream, line)) {
-    const std::vector<std::string> v = string_util::Split(line, "\t");
+    const std::vector<std::string> v = absl::StrSplit(line, "\t");
     CHECK_GE_OR_RETURN(v.size(), 1);
     CHECK_OR_RETURN(!v[0].empty());
     int32 freq = 1;
-    if (v.size() >= 2) freq = atoi(v[1].c_str());
-    if (freq >= threshold) vocab.emplace_back(v[0]);
+    if (v.size() >= 2) {
+      CHECK_OR_RETURN(absl::SimpleAtoi(v[1], &freq))
+          << "Could not parse the frequency";
+    }
+    if (freq >= threshold) {
+      vocab.emplace_back(v[0]);
+    }
   }
 
   return SetVocabulary(vocab);
