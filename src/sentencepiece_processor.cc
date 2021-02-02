@@ -208,6 +208,24 @@ util::Status SentencePieceProcessor::LoadVocabulary(absl::string_view filename,
   return SetVocabulary(vocab);
 }
 
+util::Status SentencePieceProcessor::LoadVocabulary(
+    std::stringstream& file_stream, int threshold) {
+
+  std::string line;
+  std::vector<std::string> vocab;
+
+  while (std::getline(file_stream, line)) {
+    const std::vector<std::string> v = string_util::Split(line, "\t");
+    CHECK_GE_OR_RETURN(v.size(), 1);
+    CHECK_OR_RETURN(!v[0].empty());
+    int32 freq = 1;
+    if (v.size() >= 2) freq = atoi(v[1].c_str());
+    if (freq >= threshold) vocab.emplace_back(v[0]);
+  }
+
+  return SetVocabulary(vocab);
+}
+
 #define CHECK_OR_RETURN_STATUS_STL(container)               \
   RETURN_IF_ERROR(status());                                \
   CHECK_OR_RETURN(container) << "output container is null"; \
