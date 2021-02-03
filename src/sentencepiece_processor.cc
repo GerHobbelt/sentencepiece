@@ -60,6 +60,14 @@ void SentencePieceProcessor::LoadOrDie(absl::string_view filename) {
   CHECK_OK(Load(filename));
 }
 
+util::Status SentencePieceProcessor::Load(std::stringstream& file_stream) {
+  std::string file_content = file_stream.str();
+  if (file_content[file_content.size() - 1] == '\n') {
+    file_content.pop_back();
+  }
+  return LoadFromSerializedProto(file_content);
+}
+
 util::Status SentencePieceProcessor::Load(const ModelProto &model_proto) {
   auto model_proto_copy = absl::make_unique<ModelProto>();
   *model_proto_copy = model_proto;
@@ -215,12 +223,17 @@ util::Status SentencePieceProcessor::LoadVocabulary(
   std::vector<std::string> vocab;
 
   while (std::getline(file_stream, line)) {
-    const std::vector<std::string> v = string_util::Split(line, "\t");
+    const std::vector<std::string> v = absl::StrSplit(line, "\t");
     CHECK_GE_OR_RETURN(v.size(), 1);
     CHECK_OR_RETURN(!v[0].empty());
     int32 freq = 1;
-    if (v.size() >= 2) freq = atoi(v[1].c_str());
-    if (freq >= threshold) vocab.emplace_back(v[0]);
+    if (v.size() >= 2) {
+      CHECK_OR_RETURN(absl::SimpleAtoi(v[1], &freq))
+          << "Could not parse the frequency";
+    }
+    if (freq >= threshold) {
+      vocab.emplace_back(v[0]);
+    }
   }
 
   return SetVocabulary(vocab);

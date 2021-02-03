@@ -191,6 +191,8 @@ class SentencePieceProcessor {
   // Crash if `filename` cannot be loaded.
   virtual void LoadOrDie(absl::string_view filename);
 
+  virtual util::Status Load(std::stringstream& file_stream);
+
   // Loads model from `model_proto`.
   // `model_proto` is copied.
   virtual util::Status Load(const ModelProto &model_proto);
