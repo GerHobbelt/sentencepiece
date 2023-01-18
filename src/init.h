@@ -23,7 +23,7 @@
 ABSL_DECLARE_FLAG(int32, minloglevel);
 
 namespace sentencepiece {
-inline void ParseCommandLineFlags(const char *usage, int *argc, char ***argv,
+inline void ParseCommandLineFlags(const char *usage, int *argc, const char ***argv,
                                   bool remove_arg = true) {
   const auto unused_args = absl::ParseCommandLine(*argc, *argv);
 
