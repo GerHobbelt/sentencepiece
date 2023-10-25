@@ -81,9 +81,11 @@ util::Status VerifySpec(const TrainerSpec &trainer_spec) {
   CHECK_OR_RETURN(!trainer_spec.eos_piece().empty());
   CHECK_OR_RETURN(!trainer_spec.pad_piece().empty());
 
-  if (SentencePieceTrainer::GetPretokenizerForTraining()) {
-    CHECK_EQ_OR_RETURN(TrainerSpec::UNIGRAM, trainer_spec.model_type())
-        << "PretokenizerForTraining is only supported in UNIGRAM mode.";
+  if (SentencePieceTrainer::GetPretokenizerForTraining() ||
+      !trainer_spec.pretokenization_delimiter().empty()) {
+    CHECK_OR_RETURN(trainer_spec.model_type() == TrainerSpec::UNIGRAM ||
+                    trainer_spec.model_type() == TrainerSpec::BPE)
+        << "PretokenizerForTraining is only supported in UNIGRAM or BPE mode.";
   }
 
   return util::OkStatus();
@@ -230,7 +232,6 @@ bool TrainerInterface::IsValidSentencePiece(
     if (c == 0x0000) {  // NULL is not allowed for Darts (TRIE).
       return false;
     }
-    // kUPPBoundaryChar is included when split_by_upp_for_training is true.
     if (c == kUPPBoundaryChar) {
       return false;
     }
