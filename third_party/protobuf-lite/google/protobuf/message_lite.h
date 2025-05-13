@@ -42,6 +42,8 @@
 #include <climits>
 #include <string>
 
+#if !defined(BUILD_MONOLITHIC)
+
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/io/coded_stream.h>
@@ -617,5 +619,7 @@ T* OnShutdownDelete(T* p) {
 }  // namespace google
 
 #include <google/protobuf/port_undef.inc>
+
+#endif
 
 #endif  // GOOGLE_PROTOBUF_MESSAGE_LITE_H__
