@@ -24,10 +24,12 @@
 #include "common.h"
 #include "sentencepiece_model.pb.h"
 #include "sentencepiece_processor.h"
-#include "third_party/absl/strings/string_view.h"
+#include "absl/strings/string_view.h"
 #include "third_party/darts_clone/darts.h"
 
 namespace sentencepiece {
+class TrainerSpec;
+
 namespace normalizer {
 
 // Given a list of strings, finds the longest string which is a

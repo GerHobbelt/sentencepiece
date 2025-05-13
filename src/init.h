@@ -16,9 +16,9 @@
 #define INIT_H_
 
 #include "common.h"
-#include "third_party/absl/flags/flag.h"
-#include "third_party/absl/flags/parse.h"
-#include "third_party/absl/flags/usage.h"
+#include "absl/flags/flag.h"
+#include "absl/flags/parse.h"
+#include "absl/flags/usage.h"
 
 #ifdef _USE_EXTERNAL_PROTOBUF
 #include "google/protobuf/message_lite.h"
@@ -35,7 +35,7 @@ inline void ParseCommandLineFlags(const char *usage, int *argc, const char ***ar
   const auto unused_args = absl::ParseCommandLine(*argc, *argv);
 
   if (remove_arg) {
-    char **argv_val = *argv;
+    const char **argv_val = *argv;
     *argv = argv_val = argv_val + *argc - unused_args.size();
     std::copy(unused_args.begin(), unused_args.end(), argv_val);
     *argc = static_cast<int>(unused_args.size());

@@ -17,7 +17,7 @@
 #include <algorithm>
 
 #include "sentencepiece_model.pb.h"
-#include "third_party/absl/strings/str_format.h"
+#include "absl/strings/str_format.h"
 #include "util.h"
 
 namespace sentencepiece {

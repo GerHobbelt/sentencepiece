@@ -24,9 +24,9 @@
 #include <utility>
 #include <vector>
 
-#include "third_party/absl/container/flat_hash_map.h"
-#include "third_party/absl/strings/str_split.h"
-#include "third_party/absl/strings/string_view.h"
+#include "absl/container/flat_hash_map.h"
+#include "absl/strings/str_split.h"
+#include "absl/strings/string_view.h"
 #include "util.h"
 
 namespace sentencepiece {

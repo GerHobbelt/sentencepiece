@@ -18,9 +18,9 @@
 #include <vector>
 
 #include "common.h"
-#include "third_party/absl/strings/match.h"
-#include "third_party/absl/strings/string_view.h"
-#include "third_party/absl/strings/strip.h"
+#include "absl/strings/match.h"
+#include "absl/strings/string_view.h"
+#include "absl/strings/strip.h"
 #include "third_party/darts_clone/darts.h"
 #include "util.h"
 
