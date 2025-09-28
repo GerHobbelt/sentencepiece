@@ -16,10 +16,10 @@
 
 import codecs
 import os
+import platform
 import string
 import subprocess
 import sys
-import platform
 from setuptools import Extension, setup
 from setuptools.command.build_ext import build_ext as _build_ext
 from setuptools.command.build_py import build_py as _build_py
@@ -33,7 +33,9 @@ def long_description():
   return long_description
 
 
-exec(open('src/sentencepiece/_version.py').read())
+with open('src/sentencepiece/_version.py') as f:
+  line = f.readline().strip()
+  __version__ = line.split('=')[1].strip().strip("'")
 
 
 def run_pkg_config(section, pkg_config_path=None):
@@ -94,11 +96,11 @@ class build_ext(_build_ext):
       cflags.append('-mmacosx-version-min=10.9')
     else:
       if sys.platform == 'aix':
-          cflags.append('-Wl,-s')
-          libs.append('-Wl,-s')
+        cflags.append('-Wl,-s')
+        libs.append('-Wl,-s')
       else:
-          cflags.append('-Wl,-strip-all')
-          libs.append('-Wl,-strip-all')
+        cflags.append('-Wl,-strip-all')
+        libs.append('-Wl,-strip-all')
     if sys.platform == 'linux':
       libs.append('-Wl,-Bsymbolic')
     print('## cflags={}'.format(' '.join(cflags)))
@@ -140,8 +142,8 @@ if os.name == 'nt':
     cmake_arch = 'Win32'
     if arch == 'amd64':
       cmake_arch = 'x64'
-    elif arch == "arm64":
-      cmake_arch = "ARM64"
+    elif arch == 'arm64':
+      cmake_arch = 'ARM64'
     subprocess.check_call([
         'cmake',
         'sentencepiece',
@@ -193,7 +195,6 @@ setup(
     version=__version__,
     package_dir={'': 'src'},
     url='https://github.com/google/sentencepiece',
-    license='Apache',
     platforms='Unix',
     py_modules=[
         'sentencepiece/__init__',
@@ -211,9 +212,13 @@ setup(
         'License :: OSI Approved :: Apache Software License',
         'Operating System :: Unix',
         'Programming Language :: Python',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
+        'Programming Language :: Python :: 3.13',
         'Topic :: Text Processing :: Linguistic',
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
-    test_suite='sentencepiece_test.suite',
-    tests_require=['pytest'],
 )
